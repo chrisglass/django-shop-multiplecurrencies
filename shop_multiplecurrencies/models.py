@@ -1,11 +1,26 @@
+# -*- coding: utf-8 -*-
 from django.db import models
 from shop.util.fields import CurrencyField 
 from shop.models.productmodels import Product
 
 # Create your models here.
 
+#==============================================================================
+# Models
+#==============================================================================
+
 class Currency(models.Model):
+    """
+    A Currency. It is made of: 
+    * a Name (for long display) 
+    * a short name (i.e. "CHF", "USD"...)
+    * a symbol, to display next to the price ("CHF","$","€"...)
+    It can also be prefixed ("CHF152", "$123") or suffixed ("123£"). Deciding
+    which currency should be prefixed and when is left as an excercise to the
+    reader.
+    """
     name = models.CharField(max_length=255)
+    short_name = models.CharField(max_length=255)
     symbol = models.CharField(max_length=10) # Should be short
     prefix = models.Boolean(default=False) # Should the symbol be prefixed?
 
@@ -25,19 +40,27 @@ class Price(models.Model):
         else:
             return "%s%s" % (self.value, self.currency.symbol)
 
+#==============================================================================
+# Mixins
+#==============================================================================
 
 class MultipleCurrencyMixin(object):
     """
     A mixin to add to your product subclasses to make them multi-currencies
     aware.
+    You need to use this in your models in the following way:
+
+    >>> class MyProduct(Product, MultipleCurrencyMixin):
+    >>>     pass
     """
+
     def get_price(self):
         pass # TODO: Use a default currency setting or something
 
-    def get_price_in_currency(self, symbol):
+    def get_price_in_currency(self, short_name):
         """
-        Returns the price for this product in the currency matching `symbol`
+        Returns the price for this product in the currency matching `short_name`
         """
-        price = Price.objects.filter(product=self, currency__symbol=symbol)
+        price = Price.objects.filter(product=self, currency__short_name=short_name)
         if len(price):
             price = price[0] 
