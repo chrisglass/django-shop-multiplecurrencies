@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.conf import settings
 from shop.util.fields import CurrencyField 
 from shop.models.productmodels import Product
 
@@ -31,7 +32,7 @@ class Price(models.Model):
     """
     # Product is polymorphic, so this is actually a key to Product subclasses
     product = models.ForeignKey(Product)
-    value = CurrencyField()
+    value = CurrencyField() # What a poor naming choice :(
     currency = models.ForeignKey(Currency)
 
     def __unicode__(self):
@@ -55,7 +56,16 @@ class MultipleCurrencyMixin(object):
     """
 
     def get_price(self):
-        pass # TODO: Use a default currency setting or something
+        """
+        Overrides the priduct's default get_price() method, in order to inject
+        the multi-currency behavior.
+        """
+        if settings.SHOP_DEFAULT_CURRENCY:
+            return self.get_price_in_currency(settings.SHOP_DEFAULT_CURRENCY)
+        else:
+            # Maybe the user put this mixin in by mistake, fallback to default
+            # behavior
+            return self.unit_price
 
     def get_price_in_currency(self, short_name):
         """
@@ -64,3 +74,5 @@ class MultipleCurrencyMixin(object):
         price = Price.objects.filter(product=self, currency__short_name=short_name)
         if len(price):
             price = price[0] 
+
+        return price.value
