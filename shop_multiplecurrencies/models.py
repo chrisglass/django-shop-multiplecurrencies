@@ -2,7 +2,7 @@
 from django.db import models
 from django.conf import settings
 from shop.util.fields import CurrencyField 
-from shop.models.productmodels import Product
+from shop.models.productmodel import Product
 
 # Create your models here.
 
@@ -23,7 +23,7 @@ class Currency(models.Model):
     name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=255)
     symbol = models.CharField(max_length=10) # Should be short
-    prefix = models.Boolean(default=False) # Should the symbol be prefixed?
+    prefix = models.BooleanField(default=False) # Should the symbol be prefixed?
 
 class Price(models.Model):
     """
@@ -51,8 +51,8 @@ class MultipleCurrencyMixin(object):
     aware.
     You need to use this in your models in the following way:
 
-    >>> class MyProduct(Product, MultipleCurrencyMixin):
-    >>>     pass
+    >> class MyProduct(Product, MultipleCurrencyMixin):
+    >>     pass
     """
 
     def get_price(self):
@@ -71,8 +71,9 @@ class MultipleCurrencyMixin(object):
         """
         Returns the price for this product in the currency matching `short_name`
         """
-        price = Price.objects.filter(product=self, currency__short_name=short_name)
+        price = Price.objects.filter(product=self,
+            currency__short_name=short_name).select_related('currency')
         if len(price):
             price = price[0] 
 
-        return price.value
+        return price # Caller should "unpack" the information
