@@ -2,4 +2,5 @@
 from django.test import TestCase
 
 class MultiCurrencyTestCase(TestCase):
-    pass
+    def test_true_is_true(self):
+        self.assertEqual(True, True)
