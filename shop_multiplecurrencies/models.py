@@ -21,7 +21,7 @@ class Currency(models.Model):
     reader.
     """
     name = models.CharField(max_length=255)
-    short_name = models.CharField(max_length=255)
+    short_name = models.CharField(max_length=255) #TODO: Check for case!
     symbol = models.CharField(max_length=10) # Should be short
     prefix = models.BooleanField(default=False) # Should the symbol be prefixed?
 
@@ -30,7 +30,7 @@ class Price(models.Model):
     A class representing a Price. A price is made of a value (the numerical
     part), and a currency. They are tied to a product.
     """
-    # Product is polymorphic, so this is actually a key to Product subclasses
+    # Product is polymorphic, so this is actually a key to a Product subclasses
     product = models.ForeignKey(Product)
     value = CurrencyField() # What a poor naming choice :(
     currency = models.ForeignKey(Currency)
@@ -47,7 +47,7 @@ class Price(models.Model):
 
 class MultipleCurrencyMixin(object):
     """
-    A mixin to add to your product subclasses to make them multi-currencies
+    A mixin to add to your product subclasses, so as to make them multi-currencies
     aware.
     You need to use this in your models in the following way:
 
@@ -57,13 +57,13 @@ class MultipleCurrencyMixin(object):
 
     def get_price(self):
         """
-        Overrides the priduct's default get_price() method, in order to inject
+        Overrides the product's default get_price() method, in order to inject
         the multi-currency behavior.
         """
         if settings.SHOP_DEFAULT_CURRENCY:
             return self.get_price_in_currency(settings.SHOP_DEFAULT_CURRENCY)
         else:
-            # Maybe the user put this mixin in by mistake, fallback to default
+            # Maybe the user put this mixin in by mistake? fallback to default
             # behavior
             return self.unit_price
 
