@@ -60,8 +60,9 @@ class MultipleCurrencyMixin(object):
         Overrides the product's default get_price() method, in order to inject
         the multi-currency behavior.
         """
-        if settings.SHOP_DEFAULT_CURRENCY:
-            return self.get_price_in_currency(settings.SHOP_DEFAULT_CURRENCY)
+        default = getattr(settings, 'SHOP_DEFAULT_CURRENCY', None)
+        if default != None:    
+            return self.get_price_in_currency(default)
         else:
             # Maybe the user put this mixin in by mistake? fallback to default
             # behavior
@@ -71,6 +72,7 @@ class MultipleCurrencyMixin(object):
         """
         Returns the price for this product in the currency matching `short_name`
         """
+        import ipdb; ipdb.set_trace()
         price = Price.objects.filter(product=self,
             currency__short_name=short_name).select_related('currency')
         if len(price):
