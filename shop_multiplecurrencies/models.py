@@ -72,10 +72,11 @@ class MultipleCurrencyMixin(object):
         """
         Returns the price for this product in the currency matching `short_name`
         """
-        #import ipdb; ipdb.set_trace()
         price = Price.objects.filter(product=self,
             currency__short_name=short_name).select_related('currency')
         if len(price):
             price = price[0] 
+        else:
+            price = None
 
         return price # Caller should "unpack" the information

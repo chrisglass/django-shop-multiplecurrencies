@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import with_statement
 from django.test import TestCase
 from django.db import models
 from decimal import Decimal
@@ -22,17 +23,15 @@ class MultiCurrencyTestCase(TestCase):
                             symbol="BTC",
                         )
 
-        self.product = Product.objects.create()
-
-        self.price = Price.objects.create(
-                        currency=self.currency,
-                        product=self.product,
-                        value=Decimal('99.99') # visible enough...
-                    )
-
         self.instance = MultipleCurrencyTestModel.objects.create(
                             awesome_field='whatever'
                         )
+
+        self.price = Price.objects.create(
+                        currency=self.currency,
+                        product=self.instance,
+                        value=Decimal('99.99') # visible enough...
+                    )
 
     def test_check_currency_unicode(self):
         # simple enough - check that a currency's display is adequate
@@ -50,4 +49,8 @@ class MultiCurrencyTestCase(TestCase):
 
     def test_check_currency_mixin_get_price_in_currency(self):
         res = self.instance.get_price_in_currency('BTC')
-        self.assertEqual(res, self.instance.unit_price)
+        self.assertEqual(res, self.price)
+
+    def test_check_currency_mixin_returns_none_for_fake_currencies(self):
+        res = self.instance.get_price_in_currency('CHF')
+        self.assertEqual(res, None)
